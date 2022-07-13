@@ -1,4 +1,4 @@
-module github.com/halliday/rpc
+module github.com/halliday/go-rpc
 
 go 1.18
 
