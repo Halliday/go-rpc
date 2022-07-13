@@ -1,0 +1,3 @@
+values_parse;400;Can not parse the request query values.
+unsupported_content_type;400;Unsupported Content-Type.
+json_unmarshal;400;Can not parse request body as JSON.
