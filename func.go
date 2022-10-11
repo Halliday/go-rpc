@@ -20,6 +20,8 @@ type Procedure struct {
 	out reflect.Type
 
 	fn reflect.Value
+
+	middleware []func(next http.Handler) http.Handler
 }
 
 func (p Procedure) InputType() reflect.Type {
@@ -30,7 +32,8 @@ func (p Procedure) OutputType() reflect.Type {
 	return p.out
 }
 
-func New(fn interface{}) (*Procedure, error) {
+func New(fn interface{}, opts ...Option) (*Procedure, error) {
+
 	e := new(Procedure)
 	e.fn = reflect.ValueOf(fn)
 	t := e.fn.Type()
@@ -62,11 +65,22 @@ func New(fn interface{}) (*Procedure, error) {
 		return e, fmt.Errorf("expected func with 1 .. 2 outputs")
 	}
 
+	if opts == nil {
+		opts = DefaultOptions
+	}
+	for _, opt := range opts {
+		if opt != nil {
+			if err := opt.apply(e); err != nil {
+				return e, err
+			}
+		}
+	}
+
 	return e, nil
 }
 
-func MustNew(fn interface{}) *Procedure {
-	e, err := New(fn)
+func MustNew(fn interface{}, opts ...Option) *Procedure {
+	e, err := New(fn, opts...)
 	if err != nil {
 		panic(fmt.Errorf("NewProcedure: %v", err))
 	}
@@ -92,6 +106,14 @@ func (p *Procedure) Call(ctx context.Context, input interface{}) (output interfa
 }
 
 func (p *Procedure) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+	var h http.Handler = http.HandlerFunc(p.serveHTTP)
+	for _, m := range p.middleware {
+		h = m(h)
+	}
+	h.ServeHTTP(resp, req)
+}
+
+func (p *Procedure) serveHTTP(resp http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodOptions {
 		return
 	}

@@ -1,5 +1,8 @@
 package rpc
 
+//
+// What is the cost of lies?
+
 import (
 	_ "embed"
 
