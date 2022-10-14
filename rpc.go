@@ -4,6 +4,7 @@ package rpc
 // What is the cost of lies?
 
 import (
+	"context"
 	_ "embed"
 
 	"github.com/halliday/go-module"
@@ -13,3 +14,20 @@ import (
 var messages string
 
 var _, e, Module = module.New("rpc", messages)
+
+//
+
+var ctxKey struct{}
+
+type Context interface {
+	context.Context
+	Procedure() *Procedure
+}
+
+func FindContext(ctx context.Context) Context {
+	if ctx == nil {
+		return nil
+	}
+	val, _ := ctx.Value(ctxKey).(Context)
+	return val
+}

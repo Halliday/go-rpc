@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/halliday/go-tools"
 	"github.com/halliday/go-values"
 )
 
@@ -103,92 +102,6 @@ func (p *Procedure) Call(ctx context.Context, input interface{}) (output interfa
 		err, _ = out[0].Interface().(error)
 	}
 	return output, err
-}
-
-func (p *Procedure) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	var h http.Handler = http.HandlerFunc(p.serveHTTP)
-	for _, m := range p.middleware {
-		h = m(h)
-	}
-	h.ServeHTTP(resp, req)
-}
-
-func (p *Procedure) serveHTTP(resp http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodOptions {
-		return
-	}
-
-	path := req.URL.Path
-	if path != "/" && path != "" {
-		http.NotFound(resp, req)
-		return
-	}
-
-	var input interface{}
-	if p.in != nil {
-		var q reflect.Value
-		if p.in.Kind() == reflect.Ptr {
-			q = reflect.New(p.in.Elem())
-		} else {
-			q = reflect.New(p.in)
-		}
-
-		err := UnmarshalRequest(req, q.Interface())
-		if err != nil {
-			tools.ServeError(resp, err)
-			return
-		}
-
-		if p.in.Kind() == reflect.Ptr {
-			input = q.Interface()
-		} else {
-			input = q.Elem().Interface()
-		}
-	}
-
-	output, err := p.Call(req.Context(), input)
-
-	if err != nil {
-		if redirect, ok := err.(*redirect); ok {
-			http.Redirect(resp, req, redirect.url, redirect.code)
-			return
-		}
-		tools.ServeError(resp, err)
-		return
-	}
-
-	if output != nil {
-		if str, ok := output.(string); ok {
-			resp.Write([]byte(str))
-			return
-		}
-
-		data, err := json.Marshal(output)
-		if err != nil {
-			tools.ServeError(resp, err)
-			return
-		}
-
-		resp.Header().Set("Content-Type", "application/json")
-		resp.Write(data)
-	}
-}
-
-type redirect struct {
-	url  string
-	code int
-}
-
-func (err redirect) Error() string {
-	return "redirect"
-}
-
-func (err redirect) ErrorCode() int {
-	return err.code
-}
-
-func Redirect(url string, code int) error {
-	return &redirect{url, code}
 }
 
 func UnmarshalRequest(req *http.Request, v interface{}) error {
