@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 
@@ -115,7 +115,7 @@ func UnmarshalRequest(req *http.Request, v interface{}) error {
 
 	switch req.Header.Get("Content-Type") {
 	case "application/json":
-		data, err := ioutil.ReadAll(req.Body)
+		data, err := io.ReadAll(req.Body)
 		if err != nil {
 			return err
 		}
