@@ -9,8 +9,23 @@ import (
 	"github.com/halliday/go-tools"
 )
 
+const AllowHeaders = "Content-Type"
+
 func (p *Procedure) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodOptions {
+		requestHeaders := req.Header.Get("Access-Control-Request-Headers")
+		if requestHeaders != "" {
+			allowHeaders := resp.Header().Get("Access-Control-Allow-Headers")
+			if allowHeaders != "" {
+				allowHeaders += ", " + AllowHeaders
+			} else {
+				allowHeaders = AllowHeaders
+			}
+			resp.Header().Set("Access-Control-Allow-Headers", allowHeaders)
+		}
+		return
+	}
+	if req.Method == http.MethodHead {
 		return
 	}
 
