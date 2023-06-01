@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/halliday/go-tools"
+	"github.com/halliday/go-tools/httptools"
 )
 
 const AllowHeaders = "Content-Type"
@@ -46,7 +46,7 @@ func (p *Procedure) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 
 		err := UnmarshalRequest(req, q.Interface())
 		if err != nil {
-			tools.ServeError(resp, err)
+			httptools.ServeError(resp, req, err)
 			return
 		}
 
@@ -66,7 +66,7 @@ func (p *Procedure) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	output, err := p.Call(ctx, input)
 
 	if err != nil {
-		tools.ServeError(resp, err)
+		httptools.ServeError(resp, req, err)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (p *Procedure) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 
 		data, err := json.Marshal(output)
 		if err != nil {
-			tools.ServeError(resp, err)
+			httptools.ServeError(resp, req, err)
 			return
 		}
 
