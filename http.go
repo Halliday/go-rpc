@@ -1,12 +1,14 @@
 package rpc
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
 	"reflect"
+	"strconv"
 
-	"github.com/halliday/go-tools/httptools"
+	"github.com/halliday/go-errors"
 )
 
 const AllowHeaders = "Content-Type"
@@ -46,7 +48,7 @@ func (p *Procedure) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 
 		err := UnmarshalRequest(req, q.Interface())
 		if err != nil {
-			httptools.ServeError(resp, req, err)
+			serveError(resp, err)
 			return
 		}
 
@@ -66,7 +68,7 @@ func (p *Procedure) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	output, err := p.Call(ctx, input)
 
 	if err != nil {
-		httptools.ServeError(resp, req, err)
+		serveError(resp, err)
 		return
 	}
 
@@ -78,7 +80,7 @@ func (p *Procedure) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 
 		data, err := json.Marshal(output)
 		if err != nil {
-			httptools.ServeError(resp, req, err)
+			serveError(resp, err)
 			return
 		}
 
@@ -105,4 +107,42 @@ func (ctx *HTTPContext) Value(key interface{}) interface{} {
 		return context.Context(ctx)
 	}
 	return ctx.Context.Value(key)
+}
+
+var ErrInternal = errors.NewRich("internal server error", 500, "internal server error", "", nil, nil)
+
+func serveError(resp http.ResponseWriter, err error) {
+	safe, _ := errors.Safe(err)
+	resp.Header().Set("X-Content-Type-Options", "nosniff")
+	resp.Header().Set("Content-Type", "application/json")
+	if safe != nil {
+		code := range1000(safe.(*errors.RichError).Code)
+		serveJSON(resp, code, safe)
+	} else {
+		serveJSON(resp, 500, ErrInternal)
+		Logger.Printf("rpc: unsafe error: %v", err)
+	}
+}
+
+func range1000(code int) int {
+	for code > 1000 {
+		code /= 10
+	}
+	return code
+}
+
+func serveJSON(resp http.ResponseWriter, code int, data any) {
+	var b bytes.Buffer
+	encoder := json.NewEncoder(&b)
+	encoder.SetEscapeHTML(false)
+	err := encoder.Encode(data)
+	if err != nil {
+		Logger.Printf("rpc: json encoder error %#v: %v", data, err)
+		serveError(resp, err)
+		return
+	}
+	resp.Header().Add("Content-Type", "application/json")
+	resp.Header().Add("Content-Length", strconv.Itoa(b.Len()))
+	resp.WriteHeader(code)
+	resp.Write(b.Bytes())
 }

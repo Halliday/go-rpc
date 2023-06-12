@@ -6,6 +6,7 @@ package rpc
 import (
 	"context"
 	_ "embed"
+	"log"
 
 	"github.com/halliday/go-module"
 )
@@ -14,6 +15,10 @@ import (
 var messages string
 
 var _, e, Module = module.New("rpc", messages)
+
+//
+
+var Logger = log.Default()
 
 //
 
