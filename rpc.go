@@ -27,6 +27,7 @@ var ctxKey struct{}
 type Context interface {
 	context.Context
 	Procedure() *Procedure
+	RemoteAddr() string
 }
 
 func FindContext(ctx context.Context) Context {

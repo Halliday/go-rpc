@@ -102,6 +102,10 @@ func (ctx HTTPContext) Procedure() *Procedure {
 	return ctx.procedure
 }
 
+func (ctx HTTPContext) RemoteAddr() string {
+	return ctx.Request.RemoteAddr
+}
+
 func (ctx *HTTPContext) Value(key interface{}) interface{} {
 	if key == ctxKey {
 		return context.Context(ctx)
