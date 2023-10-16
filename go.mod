@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/halliday/go-errors v0.0.0-20221117114904-701c88d594be
 	github.com/halliday/go-module v0.0.0-20221117115031-b50f77a189df
-	github.com/halliday/go-values v0.0.0-20230601110519-bb092e0622da
+	github.com/halliday/go-values v0.0.0-20231016114548-e6cd60343df5
 )
 
 require (

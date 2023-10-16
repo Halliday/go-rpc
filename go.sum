@@ -8,3 +8,5 @@ github.com/halliday/go-tools v0.0.0-20230601075640-f33fafb9787a h1:FECA8/P+Uv4f3
 github.com/halliday/go-tools v0.0.0-20230601075640-f33fafb9787a/go.mod h1:wYFjct2MT8Toy+5WsznTak4EaIlsqlMG6ijBOSWU5mE=
 github.com/halliday/go-values v0.0.0-20230601110519-bb092e0622da h1:+cShbyMvrsgBM9tr/fARX24z+92fqriyMBAGZEt0knU=
 github.com/halliday/go-values v0.0.0-20230601110519-bb092e0622da/go.mod h1:KXqHMQQxleNU2gXOmS/UaKqZxxbviVuVxiEa5WcAk2g=
+github.com/halliday/go-values v0.0.0-20231016114548-e6cd60343df5 h1:zT6KqmwDDcCYdtbKDriDTv0GcCaPZLnsyUy3XVZ6TTU=
+github.com/halliday/go-values v0.0.0-20231016114548-e6cd60343df5/go.mod h1:KXqHMQQxleNU2gXOmS/UaKqZxxbviVuVxiEa5WcAk2g=
