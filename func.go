@@ -58,7 +58,7 @@ func New(fn interface{}, opts ...Option) (*Procedure, error) {
 		fallthrough
 	case 1:
 		if t.Out(t.NumOut()-1) != errorType {
-			return e, fmt.Errorf("output 0 must be type 'error' but is '%s'", t.In(t.NumOut()-1))
+			return e, fmt.Errorf("output 0 must be type 'error' but is '%s'", t.Out(t.NumOut()-1))
 		}
 	default:
 		return e, fmt.Errorf("expected func with 1 .. 2 outputs")
@@ -81,7 +81,7 @@ func New(fn interface{}, opts ...Option) (*Procedure, error) {
 func MustNew(fn interface{}, opts ...Option) *Procedure {
 	e, err := New(fn, opts...)
 	if err != nil {
-		panic(fmt.Errorf("NewProcedure: %v", err))
+		panic(err)
 	}
 	return e
 }
@@ -110,7 +110,7 @@ func UnmarshalRequest(req *http.Request, v interface{}) error {
 	}
 
 	if err := values.Unmarshal(req.Form, v); err != nil {
-		return e("values_parse", err)
+		return fmt.Errorf("can not unmarshal request values: %w", err)
 	}
 
 	switch req.Header.Get("Content-Type") {
@@ -120,7 +120,7 @@ func UnmarshalRequest(req *http.Request, v interface{}) error {
 			return err
 		}
 		if err = json.Unmarshal(data, v); err != nil {
-			return e("json_unmarshal", err)
+			return fmt.Errorf("can not unmarshal request values: %w", err)
 		}
 		return nil
 
@@ -132,8 +132,6 @@ func UnmarshalRequest(req *http.Request, v interface{}) error {
 		// no body content
 		return nil
 	default:
-		return ErrContentType
+		return fmt.Errorf("unsupported 'Content-Type' header: %q", req.Header.Get("Content-Type"))
 	}
 }
-
-var ErrContentType = e("unsupported_content_type")

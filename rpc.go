@@ -6,21 +6,8 @@ package rpc
 import (
 	"context"
 	_ "embed"
-	"log"
-
-	"github.com/halliday/go-module"
+	"net/url"
 )
-
-//go:embed messages.csv
-var messages string
-
-var _, e, Module = module.New("rpc", messages)
-
-//
-
-var Logger = log.Default()
-
-//
 
 var ctxKey struct{}
 
@@ -28,6 +15,7 @@ type Context interface {
 	context.Context
 	Procedure() *Procedure
 	RemoteAddr() string
+	URL() *url.URL
 }
 
 func FindContext(ctx context.Context) Context {
